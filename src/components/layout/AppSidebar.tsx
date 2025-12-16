@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Map,
@@ -13,13 +13,9 @@ import {
   Building2,
   Layers,
   AlertTriangle,
-  TrendingUp,
-  Users,
-  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 
 interface NavItemProps {
   to: string;
@@ -29,25 +25,23 @@ interface NavItemProps {
 }
 
 const NavItem = ({ to, icon, label, collapsed }: NavItemProps) => {
-  const location = useLocation();
-  const isActive = location.pathname === to;
-
   return (
-    <NavLink to={to} className="w-full">
-      <div
-        className={cn(
-          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 w-full",
           "hover:bg-sidebar-accent",
           isActive
             ? "bg-sidebar-primary text-sidebar-primary-foreground"
             : "text-sidebar-foreground/70"
-        )}
-      >
-        <span className="flex-shrink-0">{icon}</span>
-        {!collapsed && (
-          <span className="font-medium text-sm truncate">{label}</span>
-        )}
-      </div>
+        )
+      }
+    >
+      <span className="flex-shrink-0">{icon}</span>
+      {!collapsed && (
+        <span className="font-medium text-sm truncate">{label}</span>
+      )}
     </NavLink>
   );
 };
