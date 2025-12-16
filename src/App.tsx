@@ -12,6 +12,7 @@ import Risks from "./pages/Risks";
 import Reports from "./pages/Reports";
 import Audit from "./pages/Audit";
 import Integrations from "./pages/Integrations";
+import Governance from "./pages/Governance";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/reports" element={<Reports />} />
           <Route path="/audit" element={<Audit />} />
           <Route path="/integrations" element={<Integrations />} />
+          <Route path="/governance" element={<Governance />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
