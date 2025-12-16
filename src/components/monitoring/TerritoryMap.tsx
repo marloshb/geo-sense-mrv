@@ -61,12 +61,29 @@ interface TerritoryMapProps {
   mapboxToken?: string;
 }
 
+const MAPBOX_TOKEN_KEY = "mapbox_public_token";
+
 export const TerritoryMap = ({ onTerritorySelect, mapboxToken }: TerritoryMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [selectedTerritory, setSelectedTerritory] = useState<typeof territories[0] | null>(null);
-  const [token, setToken] = useState(mapboxToken || "");
+  const [token, setToken] = useState(() => mapboxToken || localStorage.getItem(MAPBOX_TOKEN_KEY) || "");
+  const [tokenInput, setTokenInput] = useState("");
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [showTokenInput, setShowTokenInput] = useState(false);
+
+  const handleSaveToken = () => {
+    if (tokenInput.trim()) {
+      localStorage.setItem(MAPBOX_TOKEN_KEY, tokenInput.trim());
+      setToken(tokenInput.trim());
+      setShowTokenInput(false);
+    }
+  };
+
+  const handleChangeToken = () => {
+    setTokenInput(token);
+    setShowTokenInput(true);
+  };
 
   useEffect(() => {
     if (!mapContainer.current || !token) return;
@@ -121,7 +138,7 @@ export const TerritoryMap = ({ onTerritorySelect, mapboxToken }: TerritoryMapPro
     };
   }, [token, onTerritorySelect]);
 
-  if (!token) {
+  if (!token || showTokenInput) {
     return (
       <Card className="h-full">
         <CardHeader className="pb-2">
@@ -133,14 +150,25 @@ export const TerritoryMap = ({ onTerritorySelect, mapboxToken }: TerritoryMapPro
         <CardContent>
           <div className="h-[400px] flex flex-col items-center justify-center bg-secondary/30 rounded-lg">
             <p className="text-muted-foreground mb-4 text-center px-4">
-              Configure seu token do Mapbox para visualizar o mapa interativo
+              {showTokenInput ? "Alterar token do Mapbox" : "Configure seu token do Mapbox para visualizar o mapa interativo"}
             </p>
             <div className="w-full max-w-sm space-y-3">
               <Input
                 placeholder="Cole seu Mapbox Public Token aqui"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSaveToken()}
               />
+              <div className="flex gap-2">
+                <Button onClick={handleSaveToken} className="flex-1">
+                  Salvar Token
+                </Button>
+                {showTokenInput && (
+                  <Button variant="outline" onClick={() => setShowTokenInput(false)}>
+                    Cancelar
+                  </Button>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground text-center">
                 Obtenha seu token em{" "}
                 <a
@@ -151,6 +179,7 @@ export const TerritoryMap = ({ onTerritorySelect, mapboxToken }: TerritoryMapPro
                 >
                   mapbox.com
                 </a>
+                {" "}→ Tokens
               </p>
             </div>
           </div>
@@ -168,6 +197,9 @@ export const TerritoryMap = ({ onTerritorySelect, mapboxToken }: TerritoryMapPro
             Mapa Territorial
           </CardTitle>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleChangeToken}>
+              Alterar Token
+            </Button>
             <Button variant="outline" size="sm">
               <Filter className="w-4 h-4 mr-1" />
               Filtros
