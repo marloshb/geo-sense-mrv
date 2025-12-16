@@ -1,22 +1,39 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { TerritoryMap } from "@/components/monitoring/TerritoryMap";
 import { TerritoryList } from "@/components/monitoring/TerritoryList";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TerritoryFormModal } from "@/components/monitoring/TerritoryFormModal";
+import { AssetList } from "@/components/monitoring/AssetList";
+import { AssetFormModal } from "@/components/monitoring/AssetFormModal";
+import { LayerManager } from "@/components/monitoring/LayerManager";
+import { TimeSeriesPanel } from "@/components/monitoring/TimeSeriesPanel";
+import { EventsPanel } from "@/components/monitoring/EventsPanel";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Layers, Upload, Filter, Download } from "lucide-react";
+import { Layers, Upload, Download, Map, Factory, Clock, AlertTriangle } from "lucide-react";
+
+const mockTerritories = [
+  { id: "1", name: "Mina Carajás", type: "Mineração", status: "active" },
+  { id: "2", name: "Terminal Portuário SP", type: "Logística", status: "active" },
+  { id: "3", name: "Planta Industrial MG", type: "Industrial", status: "monitoring" },
+  { id: "4", name: "Reserva Florestal AM", type: "Conservação", status: "active" },
+];
 
 const Monitoring = () => {
+  const [isTerritoryModalOpen, setIsTerritoryModalOpen] = useState(false);
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("map");
+
   return (
     <AppLayout>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Monitoramento</h1>
+            <h1 className="text-2xl font-bold text-foreground">Monitoramento Territorial</h1>
             <p className="text-muted-foreground">
-              Visualização geoespacial e monitoramento de territórios
+              Gestão de territórios, ativos e monitoramento geoespacial
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -31,83 +48,107 @@ const Monitoring = () => {
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="map" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="map">Mapa</TabsTrigger>
-            <TabsTrigger value="satellite">Satélite</TabsTrigger>
-            <TabsTrigger value="layers">Camadas</TabsTrigger>
+        {/* Main Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="map" className="gap-1">
+              <Map className="w-4 h-4" />
+              <span className="hidden sm:inline">Mapa</span>
+            </TabsTrigger>
+            <TabsTrigger value="assets" className="gap-1">
+              <Factory className="w-4 h-4" />
+              <span className="hidden sm:inline">Ativos</span>
+            </TabsTrigger>
+            <TabsTrigger value="layers" className="gap-1">
+              <Layers className="w-4 h-4" />
+              <span className="hidden sm:inline">Camadas</span>
+            </TabsTrigger>
+            <TabsTrigger value="timeline" className="gap-1">
+              <Clock className="w-4 h-4" />
+              <span className="hidden sm:inline">Temporal</span>
+            </TabsTrigger>
+            <TabsTrigger value="events" className="gap-1">
+              <AlertTriangle className="w-4 h-4" />
+              <span className="hidden sm:inline">Eventos</span>
+            </TabsTrigger>
           </TabsList>
 
+          {/* Map Tab */}
           <TabsContent value="map" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
                 <TerritoryMap />
               </div>
               <div>
-                <TerritoryList />
+                <TerritoryList onTerritorySelect={(t) => console.log("Selected:", t)} />
               </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="satellite">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center justify-center h-[400px] text-center">
-                  <Layers className="w-12 h-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold mb-2">Imagens de Satélite</h3>
-                  <p className="text-sm text-muted-foreground max-w-md">
-                    Configure integração com provedores de imagens satelitais (ópticas e SAR) 
-                    para séries temporais automatizadas.
-                  </p>
-                  <Button variant="outline" className="mt-4">
-                    Configurar Integração
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Assets Tab */}
+          <TabsContent value="assets" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <TerritoryMap />
+              </div>
+              <div>
+                <AssetList onAddAsset={() => setIsAssetModalOpen(true)} />
+              </div>
+            </div>
           </TabsContent>
 
+          {/* Layers Tab */}
           <TabsContent value="layers">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Camadas Geoespaciais</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { name: "Limites Territoriais", type: "Polígono", active: true },
-                    { name: "Uso do Solo - 2024", type: "Raster", active: true },
-                    { name: "Biomas Brasileiros", type: "Polígono", active: false },
-                    { name: "Hidrografia", type: "Linha", active: false },
-                    { name: "Áreas Protegidas", type: "Polígono", active: true },
-                  ].map((layer, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            layer.active ? "bg-success" : "bg-muted"
-                          }`}
-                        />
-                        <div>
-                          <p className="font-medium text-sm">{layer.name}</p>
-                          <p className="text-xs text-muted-foreground">{layer.type}</p>
-                        </div>
-                      </div>
-                      <Badge variant={layer.active ? "default" : "secondary"}>
-                        {layer.active ? "Ativo" : "Inativo"}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <TerritoryMap />
+              </div>
+              <div>
+                <LayerManager />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Timeline Tab */}
+          <TabsContent value="timeline">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <TerritoryMap />
+              </div>
+              <div>
+                <TimeSeriesPanel />
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Events Tab */}
+          <TabsContent value="events">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <TerritoryMap />
+              </div>
+              <div>
+                <EventsPanel />
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modals */}
+      <TerritoryFormModal
+        open={isTerritoryModalOpen}
+        onOpenChange={setIsTerritoryModalOpen}
+        parentTerritories={mockTerritories}
+        onSave={(data) => console.log("Territory saved:", data)}
+      />
+
+      <AssetFormModal
+        open={isAssetModalOpen}
+        onOpenChange={setIsAssetModalOpen}
+        territories={mockTerritories}
+        onSave={(data) => console.log("Asset saved:", data)}
+      />
     </AppLayout>
   );
 };
