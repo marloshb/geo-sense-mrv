@@ -5,9 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Map, Layers, AlertTriangle, Thermometer, Droplets, Wind, Eye, Download, ZoomIn, ZoomOut } from "lucide-react";
+import { Map, Layers, AlertTriangle, Thermometer, Droplets, Wind, Eye, Download } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { RiskTerritoryMap } from "./RiskTerritoryMap";
 
 interface RiskLayer {
   id: string;
@@ -28,10 +29,12 @@ const riskLayers: RiskLayer[] = [
 ];
 
 const territoryRisks = [
-  { id: "1", name: "Mina Norte", riskLevel: "high", risks: ["Inundação", "Regulação"], score: 78 },
-  { id: "2", name: "Planta Industrial Sul", riskLevel: "critical", risks: ["Estresse Hídrico", "Calor"], score: 92 },
-  { id: "3", name: "Área de Influência", riskLevel: "medium", risks: ["Ventos"], score: 45 },
-  { id: "4", name: "Reserva Florestal", riskLevel: "low", risks: [], score: 15 },
+  { id: "1", name: "Complexo Mineração Norte", riskLevel: "critical", risks: ["Estresse Hídrico", "Ondas de Calor"], score: 92 },
+  { id: "2", name: "Planta Industrial Sul", riskLevel: "high", risks: ["Inundação", "Ventos"], score: 78 },
+  { id: "3", name: "Área Operacional Centro-Oeste", riskLevel: "medium", risks: ["Seca"], score: 45 },
+  { id: "4", name: "Reserva Ambiental Leste", riskLevel: "low", risks: [], score: 18 },
+  { id: "5", name: "Terminal Portuário Nordeste", riskLevel: "high", risks: ["Elevação do Mar", "Tempestades"], score: 72 },
+  { id: "6", name: "Complexo Agroindustrial", riskLevel: "medium", risks: ["Seca", "Geada"], score: 52 },
 ];
 
 export function RiskMapPanel() {
@@ -78,70 +81,20 @@ export function RiskMapPanel() {
                   <Map className="h-5 w-5" />
                   Mapa de Risco Territorial
                 </CardTitle>
-                <CardDescription>Visualização espacial de riscos climáticos</CardDescription>
+                <CardDescription>Visualização espacial de riscos climáticos com Mapbox</CardDescription>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon">
-                  <ZoomIn className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon">
-                  <ZoomOut className="h-4 w-4" />
-                </Button>
                 <Button variant="outline" size="icon" onClick={handleExportMap}>
                   <Download className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              {/* Placeholder for actual map */}
-              <div className="relative h-[500px] bg-gradient-to-br from-blue-900/20 via-green-900/20 to-yellow-900/20 rounded-lg overflow-hidden">
-                {/* Map visualization placeholder */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center space-y-4">
-                    <Map className="h-16 w-16 text-muted-foreground mx-auto" />
-                    <p className="text-muted-foreground">Mapa de risco territorial</p>
-                    <p className="text-xs text-muted-foreground">Integração com MapBox para visualização</p>
-                  </div>
-                </div>
-
-                {/* Risk Heatmap Overlay Simulation */}
-                <div className="absolute inset-0">
-                  <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-red-500/30 rounded-full blur-xl" />
-                  <div className="absolute top-1/2 right-1/3 w-24 h-24 bg-orange-500/30 rounded-full blur-xl" />
-                  <div className="absolute bottom-1/3 left-1/2 w-20 h-20 bg-yellow-500/30 rounded-full blur-xl" />
-                </div>
-
-                {/* Legend */}
-                <div className="absolute bottom-4 left-4 bg-background/90 p-3 rounded-lg shadow-lg">
-                  <p className="text-xs font-semibold mb-2">Níveis de Risco</p>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-destructive" />
-                      <span className="text-xs">Crítico</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-orange-500" />
-                      <span className="text-xs">Alto</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-yellow-500" />
-                      <span className="text-xs">Médio</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-green-500" />
-                      <span className="text-xs">Baixo</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Scenario Info */}
-                <div className="absolute top-4 left-4 bg-background/90 p-2 rounded-lg">
-                  <p className="text-xs font-semibold">
-                    Cenário: {selectedScenario === "current" ? "Atual" : selectedScenario === "rcp45" ? "RCP 4.5" : "RCP 8.5"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Horizonte: {selectedHorizon}</p>
-                </div>
-              </div>
+              <RiskTerritoryMap 
+                layers={layers}
+                scenario={selectedScenario}
+                horizon={selectedHorizon}
+              />
             </CardContent>
           </Card>
 
