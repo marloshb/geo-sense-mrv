@@ -56,8 +56,10 @@ export const AppSidebar = () => {
     { to: "/assets", icon: <Building2 size={20} />, label: "Ativos" },
     { to: "/analytics", icon: <BarChart3 size={20} />, label: "Analytics" },
     { to: "/risks", icon: <AlertTriangle size={20} />, label: "Riscos" },
+    { to: "/governance", icon: <Shield size={20} />, label: "Governança" },
     { to: "/reports", icon: <FileText size={20} />, label: "Relatórios" },
-    { to: "/audit", icon: <Shield size={20} />, label: "Auditoria" },
+    { to: "/audit", icon: <Layers size={20} />, label: "Auditoria" },
+    { to: "/integrations", icon: <Globe size={20} />, label: "Integrações" },
   ];
 
   const bottomNavItems = [
