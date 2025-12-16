@@ -50,7 +50,7 @@ export const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
 
   const mainNavItems = [
-    { to: "/", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+    { to: "/dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
     { to: "/monitoring", icon: <Map size={20} />, label: "Monitoramento" },
     { to: "/territories", icon: <Globe size={20} />, label: "Territórios" },
     { to: "/assets", icon: <Building2 size={20} />, label: "Ativos" },
