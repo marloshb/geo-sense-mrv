@@ -81,6 +81,7 @@ interface TerritoryMapProps {
 }
 
 const MAPBOX_TOKEN_KEY = "mapbox_public_token";
+const DEFAULT_MAPBOX_TOKEN = "pk.eyJ1IjoibWFybG9zaGVucmlxdWUiLCJhIjoiY21hNG1rM2ZiMDh3NTJ2b2J0cmo2ZnB3NCJ9.l46r0hLceJZVdLGUDJKBlQ";
 
 const territoryTypes = [
   { value: "Mineração", label: "Mineração" },
@@ -131,7 +132,7 @@ export const TerritoryMap = ({ onTerritorySelect, onTerritoryCreate, mapboxToken
   const draw = useRef<MapboxDraw | null>(null);
   const [territories, setTerritories] = useState<Territory[]>(initialTerritories);
   const [selectedTerritory, setSelectedTerritory] = useState<Territory | null>(null);
-  const [token, setToken] = useState(() => mapboxToken || localStorage.getItem(MAPBOX_TOKEN_KEY) || "");
+  const [token, setToken] = useState(() => mapboxToken || localStorage.getItem(MAPBOX_TOKEN_KEY) || DEFAULT_MAPBOX_TOKEN);
   const [tokenInput, setTokenInput] = useState("");
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [showTokenInput, setShowTokenInput] = useState(false);
