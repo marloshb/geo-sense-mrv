@@ -12,6 +12,7 @@ import Risks from "./pages/Risks";
 import Reports from "./pages/Reports";
 import Audit from "./pages/Audit";
 import Settings from "./pages/Settings";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/reports" element={<Reports />} />
           <Route path="/audit" element={<Audit />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
