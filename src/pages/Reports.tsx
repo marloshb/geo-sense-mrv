@@ -16,6 +16,7 @@ import {
   Map,
   PanelTop,
   Brain,
+  Shield,
 } from "lucide-react";
 import {
   Select,
@@ -28,6 +29,7 @@ import { OperationalDashboard } from "@/components/reports/OperationalDashboard"
 import { BoardDashboard } from "@/components/reports/BoardDashboard";
 import { ReportGenerator } from "@/components/reports/ReportGenerator";
 import { SpatialReporting } from "@/components/reports/SpatialReporting";
+import { ClimateRiskExecutiveDashboard } from "@/components/reports/ClimateRiskExecutiveDashboard";
 
 const reports = [
   {
@@ -112,7 +114,7 @@ const Reports = () => {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="operational" className="gap-2">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Operacional</span>
@@ -120,6 +122,10 @@ const Reports = () => {
             <TabsTrigger value="executive" className="gap-2">
               <PanelTop className="w-4 h-4" />
               <span className="hidden sm:inline">Executivo</span>
+            </TabsTrigger>
+            <TabsTrigger value="climate" className="gap-2">
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:inline">IFRS S2</span>
             </TabsTrigger>
             <TabsTrigger value="spatial" className="gap-2">
               <Map className="w-4 h-4" />
@@ -143,6 +149,11 @@ const Reports = () => {
           {/* Executive Dashboard (Board View) */}
           <TabsContent value="executive">
             <BoardDashboard />
+          </TabsContent>
+
+          {/* Climate Risk Executive Dashboard - IFRS S2 */}
+          <TabsContent value="climate">
+            <ClimateRiskExecutiveDashboard />
           </TabsContent>
 
           {/* Spatial Reporting */}
