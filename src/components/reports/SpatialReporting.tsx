@@ -14,12 +14,12 @@ import { Label } from "@/components/ui/label";
 import {
   Map,
   Layers,
-  Download,
   ZoomIn,
   Maximize2,
   Camera,
   Palette,
 } from "lucide-react";
+import { EmissionsMap } from "./EmissionsMap";
 
 interface MapLayer {
   id: string;
@@ -56,7 +56,6 @@ export const SpatialReporting = () => {
   };
 
   const exportMap = (format: "png" | "pdf" | "geojson") => {
-    // Placeholder for map export functionality
     console.log(`Exporting map as ${format}`);
   };
 
@@ -97,14 +96,14 @@ export const SpatialReporting = () => {
                     <div className="w-3 h-3 rounded bg-destructive" />
                     <span>Alto</span>
                   </div>
-                  <span className="text-muted-foreground">&gt; 5000</span>
+                  <span className="text-muted-foreground">&gt; 3000</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded bg-warning" />
                     <span>Médio</span>
                   </div>
-                  <span className="text-muted-foreground">1000-5000</span>
+                  <span className="text-muted-foreground">1000-3000</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
@@ -203,100 +202,8 @@ export const SpatialReporting = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Map Placeholder - in production this would be a real map component */}
-            <div className="relative w-full h-[400px] bg-secondary/30 rounded-lg overflow-hidden">
-              {/* Simulated thematic map with territories */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative w-full h-full">
-                  {/* Territory polygons simulation */}
-                  <div
-                    className="absolute bg-destructive/40 border-2 border-destructive rounded-lg"
-                    style={{
-                      top: "15%",
-                      left: "20%",
-                      width: "25%",
-                      height: "30%",
-                    }}
-                  >
-                    <div className="absolute bottom-2 left-2 bg-background/90 px-2 py-1 rounded text-xs">
-                      <div className="font-medium">Carajás</div>
-                      <div className="text-muted-foreground">4,200 tCO₂e</div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="absolute bg-warning/40 border-2 border-warning rounded-lg"
-                    style={{
-                      top: "25%",
-                      left: "55%",
-                      width: "20%",
-                      height: "25%",
-                    }}
-                  >
-                    <div className="absolute bottom-2 left-2 bg-background/90 px-2 py-1 rounded text-xs">
-                      <div className="font-medium">Planta MG</div>
-                      <div className="text-muted-foreground">2,100 tCO₂e</div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="absolute bg-success/40 border-2 border-success rounded-lg"
-                    style={{
-                      top: "55%",
-                      left: "10%",
-                      width: "30%",
-                      height: "35%",
-                    }}
-                  >
-                    <div className="absolute bottom-2 left-2 bg-background/90 px-2 py-1 rounded text-xs">
-                      <div className="font-medium">Reserva AM</div>
-                      <div className="text-muted-foreground">320 tCO₂e</div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="absolute bg-warning/40 border-2 border-warning rounded-lg"
-                    style={{
-                      top: "60%",
-                      left: "50%",
-                      width: "18%",
-                      height: "20%",
-                    }}
-                  >
-                    <div className="absolute bottom-2 left-2 bg-background/90 px-2 py-1 rounded text-xs">
-                      <div className="font-medium">Terminal SP</div>
-                      <div className="text-muted-foreground">1,800 tCO₂e</div>
-                    </div>
-                  </div>
-
-                  <div
-                    className="absolute bg-info/40 border-2 border-info rounded-lg"
-                    style={{
-                      top: "45%",
-                      left: "75%",
-                      width: "15%",
-                      height: "18%",
-                    }}
-                  >
-                    <div className="absolute bottom-2 left-2 bg-background/90 px-2 py-1 rounded text-xs">
-                      <div className="font-medium">Porto RJ</div>
-                      <div className="text-muted-foreground">1,400 tCO₂e</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Map controls overlay */}
-              <div className="absolute bottom-4 right-4 bg-background/90 rounded-lg p-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Escala:</span>
-                  <div className="w-16 h-1 bg-foreground/50 relative">
-                    <span className="absolute -bottom-4 left-0">0</span>
-                    <span className="absolute -bottom-4 right-0">500km</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Mapbox Emissions Map */}
+            <EmissionsMap selectedIndicator={selectedIndicator} />
 
             {/* Territory Summary */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
