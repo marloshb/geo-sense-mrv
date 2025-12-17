@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { WorkflowIndicator } from "@/components/layout/WorkflowIndicator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -84,14 +85,18 @@ const Reports = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
+        {/* Workflow Indicator */}
+        <WorkflowIndicator />
+
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <FileText className="w-6 h-6 text-success" />
               Reporting & Dashboards
             </h1>
             <p className="text-muted-foreground">
-              Dashboards operacionais, executivos e geração de relatórios
+              Dashboards operacionais, executivos e geração de relatórios — <span className="text-primary font-medium">Etapa 5</span> do fluxo MRV
             </p>
           </div>
           <div className="flex items-center gap-2">

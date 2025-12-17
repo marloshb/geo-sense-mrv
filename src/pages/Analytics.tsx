@@ -1,7 +1,9 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { WorkflowIndicator } from "@/components/layout/WorkflowIndicator";
 import { EmissionsCalculator } from "@/components/analytics/EmissionsCalculator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart3 } from "lucide-react";
 import {
   PieChart,
   Pie,
@@ -34,11 +36,17 @@ const Analytics = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
+        {/* Workflow Indicator */}
+        <WorkflowIndicator />
+
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 text-info" />
+            Analytics MRV
+          </h1>
           <p className="text-muted-foreground">
-            Análise de métricas, cálculos e insights automatizados
+            Análise de métricas, cálculos e insights automatizados — <span className="text-primary font-medium">Etapa 3</span> do fluxo MRV
           </p>
         </div>
 

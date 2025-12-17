@@ -1,10 +1,10 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { WorkflowIndicator } from "@/components/layout/WorkflowIndicator";
 import { TerritoryList } from "@/components/monitoring/TerritoryList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -13,18 +13,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Upload } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Upload, Globe, MapPin, TrendingUp } from "lucide-react";
 
 const Territories = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
+        {/* Workflow Indicator */}
+        <WorkflowIndicator />
+
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Territórios</h1>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Globe className="w-6 h-6 text-primary" />
+              Territórios
+            </h1>
             <p className="text-muted-foreground">
-              Gestão de territórios e áreas monitoradas
+              Gestão de territórios e áreas monitoradas — <span className="text-primary font-medium">Etapa 1</span> do fluxo MRV
             </p>
           </div>
           <div className="flex items-center gap-2">

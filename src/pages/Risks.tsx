@@ -1,4 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { WorkflowIndicator } from "@/components/layout/WorkflowIndicator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PhysicalRisksPanel } from "@/components/risks/PhysicalRisksPanel";
 import { TransitionRisksPanel } from "@/components/risks/TransitionRisksPanel";
@@ -30,12 +31,18 @@ const Risks = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
+        {/* Workflow Indicator */}
+        <WorkflowIndicator />
+
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Riscos Climáticos</h1>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <AlertTriangle className="w-6 h-6 text-warning" />
+              Riscos Climáticos
+            </h1>
             <p className="text-muted-foreground">
-              Avaliação e gestão de riscos físicos e de transição baseados em território
+              Avaliação e gestão de riscos físicos e de transição — <span className="text-primary font-medium">Etapa 4</span> do fluxo MRV
             </p>
           </div>
           <Select defaultValue="all">
