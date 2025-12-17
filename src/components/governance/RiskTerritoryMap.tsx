@@ -1,11 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Key, RefreshCw } from "lucide-react";
 
 interface RiskLayer {
   id: string;
@@ -31,6 +26,8 @@ interface RiskTerritoryMapProps {
   horizon: string;
   onTerritorySelect?: (territory: TerritoryRisk | null) => void;
 }
+
+const MAPBOX_TOKEN = 'pk.eyJ1IjoibWFybG9zaGVucmlxdWUiLCJhIjoiY21hNG1rM2ZiMDh3NTJ2b2J0cmo2ZnB3NCJ9.l46r0hLceJZVdLGUDJKBlQ';
 
 // Dados de territórios com riscos climáticos (coordenadas fictícias baseadas no Brasil)
 const territoriesWithRisks: TerritoryRisk[] = [
@@ -123,41 +120,17 @@ const getRiskColor = (level: string): string => {
   }
 };
 
-const MAPBOX_TOKEN_KEY = 'mapbox_risk_token';
-
 export function RiskTerritoryMap({ layers, scenario, horizon, onTerritorySelect }: RiskTerritoryMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [mapToken, setMapToken] = useState<string>(() => {
-    return localStorage.getItem(MAPBOX_TOKEN_KEY) || '';
-  });
-  const [tokenInput, setTokenInput] = useState('');
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [selectedTerritory, setSelectedTerritory] = useState<TerritoryRisk | null>(null);
 
-  const handleSaveToken = () => {
-    if (tokenInput.trim()) {
-      localStorage.setItem(MAPBOX_TOKEN_KEY, tokenInput.trim());
-      setMapToken(tokenInput.trim());
-    }
-  };
-
-  const handleChangeToken = () => {
-    localStorage.removeItem(MAPBOX_TOKEN_KEY);
-    setMapToken('');
-    setTokenInput('');
-    if (map.current) {
-      map.current.remove();
-      map.current = null;
-    }
-    setIsMapLoaded(false);
-  };
-
   // Inicializa o mapa
   useEffect(() => {
-    if (!mapContainer.current || !mapToken) return;
+    if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = mapToken;
+    mapboxgl.accessToken = MAPBOX_TOKEN;
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -330,13 +303,12 @@ export function RiskTerritoryMap({ layers, scenario, horizon, onTerritorySelect 
     return () => {
       map.current?.remove();
     };
-  }, [mapToken]);
+  }, []);
 
   // Atualiza visibilidade das camadas baseado nos controles
   useEffect(() => {
     if (!map.current || !isMapLoaded) return;
 
-    const floodLayer = layers.find(l => l.id === 'flood');
     const heatmapVisible = layers.some(l => l.enabled && (l.id === 'flood' || l.id === 'drought' || l.id === 'heat'));
     
     if (map.current.getLayer('risk-heatmap')) {
@@ -354,53 +326,9 @@ export function RiskTerritoryMap({ layers, scenario, horizon, onTerritorySelect 
     }
   }, [layers, isMapLoaded]);
 
-  // Se não tem token, mostra formulário
-  if (!mapToken) {
-    return (
-      <Card className="h-[500px] flex items-center justify-center">
-        <CardContent className="text-center space-y-4 max-w-md">
-          <Key className="h-12 w-12 text-muted-foreground mx-auto" />
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg">Configure o Mapbox</h3>
-            <p className="text-sm text-muted-foreground">
-              Para visualizar o mapa de risco territorial, insira seu token público do Mapbox.
-              Obtenha em <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">mapbox.com</a>
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="token">Token Público Mapbox</Label>
-            <Input
-              id="token"
-              type="text"
-              placeholder="pk.eyJ1Ijo..."
-              value={tokenInput}
-              onChange={(e) => setTokenInput(e.target.value)}
-            />
-          </div>
-          <Button onClick={handleSaveToken} disabled={!tokenInput.trim()}>
-            Ativar Mapa
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="relative h-[500px] rounded-lg overflow-hidden">
       <div ref={mapContainer} className="absolute inset-0" />
-      
-      {/* Botão para trocar token */}
-      <div className="absolute top-4 right-16 z-10">
-        <Button 
-          variant="secondary" 
-          size="sm" 
-          onClick={handleChangeToken}
-          className="bg-background/90 hover:bg-background"
-        >
-          <RefreshCw className="h-3 w-3 mr-1" />
-          Trocar Token
-        </Button>
-      </div>
 
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-background/95 p-3 rounded-lg shadow-lg z-10">
