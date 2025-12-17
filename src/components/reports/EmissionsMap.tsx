@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { escapeHtml } from '@/lib/security';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoibWFybG9zaGVucmlxdWUiLCJhIjoiY21hNG1rM2ZiMDh3NTJ2b2J0cmo2ZnB3NCJ9.l46r0hLceJZVdLGUDJKBlQ';
 
@@ -179,19 +180,20 @@ export function EmissionsMap({ selectedIndicator = 'emissions' }: EmissionsMapPr
           box-shadow: 0 2px 8px rgba(0,0,0,0.4);
           white-space: nowrap;
         `;
-        el.innerHTML = `${territory.emissions.toLocaleString()} tCO₂e`;
+        el.textContent = `${territory.emissions.toLocaleString()} tCO₂e`;
 
+        const levelText = territory.level === 'high' ? 'Alto' : territory.level === 'medium' ? 'Médio' : 'Baixo';
         const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
           .setHTML(`
             <div style="padding: 8px; min-width: 150px;">
-              <h3 style="font-weight: bold; margin-bottom: 4px; font-size: 14px;">${territory.name}</h3>
+              <h3 style="font-weight: bold; margin-bottom: 4px; font-size: 14px;">${escapeHtml(territory.name)}</h3>
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <span style="background: ${getEmissionColor(territory.level)}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
-                  ${territory.emissions.toLocaleString()} tCO₂e
+                <span style="background: ${escapeHtml(getEmissionColor(territory.level))}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+                  ${escapeHtml(territory.emissions.toLocaleString())} tCO₂e
                 </span>
               </div>
               <p style="font-size: 11px; color: #666;">
-                Nível: ${territory.level === 'high' ? 'Alto' : territory.level === 'medium' ? 'Médio' : 'Baixo'}
+                Nível: ${escapeHtml(levelText)}
               </p>
             </div>
           `);
