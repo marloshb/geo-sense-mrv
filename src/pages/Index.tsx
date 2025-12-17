@@ -10,7 +10,7 @@ import { DifferentialsSection } from "@/components/home/DifferentialsSection";
 import { CTASection } from "@/components/home/CTASection";
 import { Footer } from "@/components/home/Footer";
 import { Button } from "@/components/ui/button";
-import { Leaf, Menu } from "lucide-react";
+import { Leaf, Menu, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -41,12 +41,22 @@ const Index = () => {
             </div>
 
             {/* CTA */}
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => navigate("/auth")}
+                className="hidden sm:inline-flex"
+              >
                 Entrar
               </Button>
-              <Button size="sm" onClick={() => navigate("/")}>
-                Demo
+              <Button 
+                size="sm" 
+                onClick={() => navigate("/dashboard")}
+                className="gap-2"
+              >
+                Acessar Plataforma
+                <ArrowRight className="w-4 h-4" />
               </Button>
               <Button 
                 variant="ghost" 
@@ -61,11 +71,29 @@ const Index = () => {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden py-4 space-y-2">
+            <div className="md:hidden py-4 space-y-2 border-t mt-4">
               <a href="#produto" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Produto</a>
               <a href="#solucao" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Solução</a>
               <a href="#modulos" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Módulos</a>
               <a href="#impacto" className="block py-2 text-sm text-muted-foreground hover:text-foreground">Impacto</a>
+              <div className="pt-2 border-t space-y-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate("/auth")}
+                  className="w-full"
+                >
+                  Entrar
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate("/dashboard")}
+                  className="w-full gap-2"
+                >
+                  Acessar Plataforma
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>

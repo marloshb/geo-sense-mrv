@@ -1,4 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
+import { WelcomeSection } from "@/components/dashboard/WelcomeSection";
+import { WorkflowIndicator } from "@/components/layout/WorkflowIndicator";
 import { KPICard } from "@/components/dashboard/KPICard";
 import { EmissionsChart } from "@/components/dashboard/EmissionsChart";
 import { RiskMatrix } from "@/components/dashboard/RiskMatrix";
@@ -8,9 +10,7 @@ import { TerritoryMap } from "@/components/monitoring/TerritoryMap";
 import {
   Cloud,
   TreeDeciduous,
-  Factory,
   AlertTriangle,
-  TrendingDown,
   Globe,
 } from "lucide-react";
 
@@ -18,13 +18,11 @@ const Dashboard = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Page Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Visão geral de métricas ambientais e climáticas
-          </p>
-        </div>
+        {/* Welcome Section */}
+        <WelcomeSection />
+
+        {/* Workflow Indicator */}
+        <WorkflowIndicator />
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
