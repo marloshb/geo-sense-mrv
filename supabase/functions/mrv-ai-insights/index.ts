@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,11 +12,83 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Create client with user's token to verify authentication
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    });
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error("Authentication failed:", authError?.message);
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    console.log(`Authenticated user: ${user.id}`);
+
+    // Verify user has a profile (organization membership)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile?.organization_id) {
+      console.error("Failed to get user profile:", profileError?.message);
+      return new Response(JSON.stringify({ error: 'User profile not found' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     const { type, data, context } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // If territoryId is in context, verify user has access
+    if (context?.territoryId) {
+      const { data: territory, error: territoryError } = await supabase
+        .from('territories')
+        .select('organization_id')
+        .eq('id', context.territoryId)
+        .single();
+
+      if (territoryError || !territory) {
+        console.error("Territory not found:", territoryError?.message);
+        return new Response(JSON.stringify({ error: 'Territory not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (territory.organization_id !== profile.organization_id) {
+        console.error("Access denied: user doesn't have access to this territory");
+        return new Response(JSON.stringify({ error: 'Access denied' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     let systemPrompt = "";
@@ -143,7 +216,7 @@ Dados climáticos regionais: ${JSON.stringify(context?.climate || {})}`;
         throw new Error(`Unknown insight type: ${type}`);
     }
 
-    console.log(`Processing ${type} request`);
+    console.log(`Processing ${type} request for user ${user.id}`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -185,7 +258,6 @@ Dados climáticos regionais: ${JSON.stringify(context?.climate || {})}`;
     // Try to parse JSON from the response
     let parsedResult;
     try {
-      // Extract JSON from the response (handle markdown code blocks)
       const jsonMatch = content.match(/```json\n?([\s\S]*?)\n?```/) || content.match(/\{[\s\S]*\}/);
       const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : content;
       parsedResult = JSON.parse(jsonStr);
@@ -193,7 +265,7 @@ Dados climáticos regionais: ${JSON.stringify(context?.climate || {})}`;
       parsedResult = { rawContent: content };
     }
 
-    console.log(`Successfully processed ${type} request`);
+    console.log(`Successfully processed ${type} request for user ${user.id}`);
 
     return new Response(JSON.stringify({ success: true, result: parsedResult }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
