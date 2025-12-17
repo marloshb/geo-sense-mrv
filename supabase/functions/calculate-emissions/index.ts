@@ -141,6 +141,16 @@ serve(async (req) => {
       });
     }
 
+    // Validate organization_id is a valid UUID before using in query
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!profile.organization_id || !uuidRegex.test(profile.organization_id)) {
+      console.error("Invalid organization ID format");
+      return new Response(JSON.stringify({ error: 'Invalid organization ID' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Fetch emission factors (these are either default or organization-specific)
     const { data: emissionFactors, error: efError } = await supabase
       .from('emission_factors')
