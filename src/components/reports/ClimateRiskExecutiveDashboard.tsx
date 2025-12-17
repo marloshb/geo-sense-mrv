@@ -9,28 +9,21 @@ import {
   FileText,
   AlertTriangle,
   ThermometerSun,
-  Droplets,
   Scale,
   TrendingUp,
-  TrendingDown,
   Target,
   Shield,
-  Clock,
   CheckCircle2,
-  Building,
   MapPin,
   Calendar,
   Printer,
   Brain,
-  ArrowRight,
-  DollarSign,
-  Users
+  DollarSign
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { toast } from "sonner";
 
-// Executive Summary Data
 const executiveSummary = {
   reportDate: new Date().toLocaleDateString('pt-BR'),
   reportingPeriod: "2024",
@@ -45,8 +38,6 @@ const keyMetrics = {
   criticalRisks: 8,
   physicalRisks: 9,
   transitionRisks: 12,
-  mitigatedRisks: 5,
-  monitoredRisks: 16,
   totalFinancialExposure: { min: 130, max: 485 },
   mitigationInvestment: 31.5,
   riskReductionAchieved: 23
@@ -72,24 +63,24 @@ const scenarioAnalysis = [
   { 
     name: "Tendência Atual", 
     temperature: "+3.0°C", 
-    physicalRisk: "Crítico",
-    transitionRisk: "Médio",
+    physicalRisk: "critical",
+    transitionRisk: "medium",
     impact: "R$ 80-200M",
     probability: 40
   },
   { 
     name: "Transição Ordenada", 
     temperature: "+2.0°C", 
-    physicalRisk: "Médio",
-    transitionRisk: "Alto",
+    physicalRisk: "medium",
+    transitionRisk: "high",
     impact: "R$ 50-120M",
     probability: 35
   },
   { 
     name: "Transição Acelerada", 
     temperature: "+1.5°C", 
-    physicalRisk: "Baixo",
-    transitionRisk: "Crítico",
+    physicalRisk: "low",
+    transitionRisk: "critical",
     impact: "R$ 70-180M",
     probability: 25
   }
@@ -120,36 +111,39 @@ const territoriesAtRisk = [
   { name: "Área Costeira Sul", risks: 3, severity: "high", mainRisk: "Tempestades" }
 ];
 
-const getRiskColor = (score: number) => {
+const aiRecommendations = [
+  { title: "Prioridade #1", description: "Implementar sistema de monitoramento hídrico em tempo real na Planta MG", impact: "Redução de 35% no risco de escassez" },
+  { title: "Prioridade #2", description: "Acelerar transição energética no Terminal SP", impact: "Economia de R$ 15M em taxas de carbono" },
+  { title: "Prioridade #3", description: "Desenvolver plano de contingência para eventos extremos", impact: "Redução de 40% no tempo de resposta" }
+];
+
+function getRiskColor(score: number): string {
   if (score >= 80) return "text-destructive";
   if (score >= 60) return "text-warning";
   if (score >= 40) return "text-info";
   return "text-success";
-};
+}
 
-const getRiskBg = (score: number) => {
-  if (score >= 80) return "bg-destructive/10";
-  if (score >= 60) return "bg-warning/10";
-  if (score >= 40) return "bg-info/10";
-  return "bg-success/10";
-};
+function getSeverityBadge(severity: string) {
+  const config: Record<string, { className: string; label: string }> = {
+    critical: { className: "bg-destructive/10 text-destructive", label: "Crítico" },
+    high: { className: "bg-warning/10 text-warning", label: "Alto" },
+    medium: { className: "bg-info/10 text-info", label: "Médio" },
+    low: { className: "bg-success/10 text-success", label: "Baixo" }
+  };
+  const { className, label } = config[severity] || config.low;
+  return <Badge className={className}>{label}</Badge>;
+}
 
-const getSeverityBadge = (severity: string) => {
-  switch (severity) {
-    case "critical": return <Badge className="bg-destructive/10 text-destructive">Crítico</Badge>;
-    case "high": return <Badge className="bg-warning/10 text-warning">Alto</Badge>;
-    case "medium": return <Badge className="bg-info/10 text-info">Médio</Badge>;
-    default: return <Badge className="bg-success/10 text-success">Baixo</Badge>;
-  }
-};
-
-const getComplianceBadge = (status: string) => {
-  switch (status) {
-    case "compliant": return <Badge className="bg-success/10 text-success">Conforme</Badge>;
-    case "partial": return <Badge className="bg-warning/10 text-warning">Parcial</Badge>;
-    default: return <Badge className="bg-destructive/10 text-destructive">Não Conforme</Badge>;
-  }
-};
+function getComplianceBadge(status: string) {
+  const config: Record<string, { className: string; label: string }> = {
+    compliant: { className: "bg-success/10 text-success", label: "Conforme" },
+    partial: { className: "bg-warning/10 text-warning", label: "Parcial" },
+    "non-compliant": { className: "bg-destructive/10 text-destructive", label: "Não Conforme" }
+  };
+  const { className, label } = config[status] || config["non-compliant"];
+  return <Badge className={className}>{label}</Badge>;
+}
 
 export function ClimateRiskExecutiveDashboard() {
   const dashboardRef = useRef<HTMLDivElement>(null);
@@ -185,12 +179,10 @@ export function ClimateRiskExecutiveDashboard() {
       const imgX = (pdfWidth - imgWidth * ratio) / 2;
       const imgY = 10;
 
-      // Add multiple pages if content is long
       const pageHeight = pdfHeight - 20;
       const scaledHeight = imgHeight * ratio;
       let heightLeft = scaledHeight;
       let position = imgY;
-      let page = 1;
 
       pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, scaledHeight);
       heightLeft -= pageHeight;
@@ -200,10 +192,8 @@ export function ClimateRiskExecutiveDashboard() {
         pdf.addPage();
         pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, scaledHeight);
         heightLeft -= pageHeight;
-        page++;
       }
 
-      // Add header to first page
       pdf.setPage(1);
       pdf.setFontSize(8);
       pdf.setTextColor(128, 128, 128);
@@ -222,7 +212,6 @@ export function ClimateRiskExecutiveDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Export Actions */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">Dashboard Executivo de Riscos Climáticos</h2>
@@ -240,9 +229,7 @@ export function ClimateRiskExecutiveDashboard() {
         </div>
       </div>
 
-      {/* Dashboard Content - This is what gets exported */}
       <div ref={dashboardRef} className="space-y-6 bg-background p-6 rounded-lg">
-        {/* Report Header */}
         <div className="border-b pb-4">
           <div className="flex items-center justify-between">
             <div>
@@ -262,7 +249,6 @@ export function ClimateRiskExecutiveDashboard() {
           </div>
         </div>
 
-        {/* Executive Summary KPIs */}
         <div>
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <Target className="h-5 w-5" />
@@ -318,7 +304,7 @@ export function ClimateRiskExecutiveDashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-info/10 rounded-lg">
-                    <TrendingDown className="h-5 w-5 text-info" />
+                    <TrendingUp className="h-5 w-5 text-info" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Redução de Risco</p>
@@ -333,9 +319,7 @@ export function ClimateRiskExecutiveDashboard() {
 
         <Separator />
 
-        {/* Risk Overview - Two columns */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Physical Risks */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
@@ -360,7 +344,6 @@ export function ClimateRiskExecutiveDashboard() {
             </CardContent>
           </Card>
 
-          {/* Transition Risks */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
@@ -388,7 +371,6 @@ export function ClimateRiskExecutiveDashboard() {
 
         <Separator />
 
-        {/* Scenario Analysis */}
         <div>
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <Calendar className="h-5 w-5" />
@@ -410,11 +392,11 @@ export function ClimateRiskExecutiveDashboard() {
                 <CardContent className="space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Risco Físico</span>
-                    {getSeverityBadge(scenario.physicalRisk.toLowerCase())}
+                    {getSeverityBadge(scenario.physicalRisk)}
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">Risco Transição</span>
-                    {getSeverityBadge(scenario.transitionRisk.toLowerCase())}
+                    {getSeverityBadge(scenario.transitionRisk)}
                   </div>
                   <div className="pt-2 border-t">
                     <p className="text-xs text-muted-foreground">Impacto Financeiro</p>
@@ -428,7 +410,6 @@ export function ClimateRiskExecutiveDashboard() {
 
         <Separator />
 
-        {/* Territories at Risk */}
         <div>
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <MapPin className="h-5 w-5" />
@@ -442,8 +423,10 @@ export function ClimateRiskExecutiveDashboard() {
                     <h4 className="font-medium text-sm">{territory.name}</h4>
                     {getSeverityBadge(territory.severity)}
                   </div>
-                  <p className="text-xs text-muted-foreground mb-1">{territory.risks} riscos identificados</p>
-                  <p className="text-xs"><span className="font-medium">Principal:</span> {territory.mainRisk}</p>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p>{territory.risks} riscos identificados</p>
+                    <p>Principal: {territory.mainRisk}</p>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -452,70 +435,57 @@ export function ClimateRiskExecutiveDashboard() {
 
         <Separator />
 
-        {/* Action Plans Status */}
         <div>
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <Target className="h-5 w-5" />
             Status dos Planos de Ação
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Planos de Ação</span>
-                  <span className="font-bold">{actionPlansStatus.total}</span>
+          <Card>
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{actionPlansStatus.total}</p>
+                  <p className="text-xs text-muted-foreground">Total de Planos</p>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 bg-success/10 rounded-lg">
-                    <p className="text-lg font-bold text-success">{actionPlansStatus.completed}</p>
-                    <p className="text-xs text-muted-foreground">Concluídos</p>
-                  </div>
-                  <div className="p-2 bg-info/10 rounded-lg">
-                    <p className="text-lg font-bold text-info">{actionPlansStatus.inProgress}</p>
-                    <p className="text-xs text-muted-foreground">Em Andamento</p>
-                  </div>
-                  <div className="p-2 bg-destructive/10 rounded-lg">
-                    <p className="text-lg font-bold text-destructive">{actionPlansStatus.delayed}</p>
-                    <p className="text-xs text-muted-foreground">Atrasados</p>
-                  </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-success">{actionPlansStatus.completed}</p>
+                  <p className="text-xs text-muted-foreground">Concluídos</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Execução Orçamentária</span>
-                  <span className="font-bold">
-                    {Math.round((actionPlansStatus.executedBudget / actionPlansStatus.totalBudget) * 100)}%
-                  </span>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-info">{actionPlansStatus.inProgress}</p>
+                  <p className="text-xs text-muted-foreground">Em Andamento</p>
                 </div>
-                <Progress 
-                  value={(actionPlansStatus.executedBudget / actionPlansStatus.totalBudget) * 100} 
-                  className="h-3" 
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Executado: R$ {(actionPlansStatus.executedBudget / 1000000).toFixed(1)}M</span>
-                  <span>Total: R$ {(actionPlansStatus.totalBudget / 1000000).toFixed(1)}M</span>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-destructive">{actionPlansStatus.delayed}</p>
+                  <p className="text-xs text-muted-foreground">Atrasados</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Execução Orçamentária</span>
+                  <span>{Math.round((actionPlansStatus.executedBudget / actionPlansStatus.totalBudget) * 100)}%</span>
+                </div>
+                <Progress value={(actionPlansStatus.executedBudget / actionPlansStatus.totalBudget) * 100} className="h-2" />
+                <p className="text-xs text-muted-foreground">
+                  R$ {(actionPlansStatus.executedBudget / 1000000).toFixed(1)}M de R$ {(actionPlansStatus.totalBudget / 1000000).toFixed(1)}M
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Separator />
 
-        {/* IFRS S2 Compliance */}
         <div>
           <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+            <CheckCircle2 className="h-5 w-5" />
             Conformidade IFRS S2
           </h3>
           <Card>
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-3">
                 {ifrsS2Compliance.map((item, idx) => (
-                  <div key={idx} className="flex items-start justify-between p-3 bg-secondary/30 rounded-lg">
+                  <div key={idx} className="flex items-center justify-between p-2 bg-secondary/30 rounded-lg">
                     <div>
                       <p className="text-sm font-medium">{item.requirement}</p>
                       <p className="text-xs text-muted-foreground">{item.details}</p>
@@ -528,49 +498,33 @@ export function ClimateRiskExecutiveDashboard() {
           </Card>
         </div>
 
-        {/* AI Recommendations */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Brain className="h-5 w-5 text-primary" />
-              Recomendações Estratégicas (IA)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-2 p-3 bg-background rounded-lg">
-              <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium">Priorizar mitigação de escassez hídrica</p>
-                <p className="text-xs text-muted-foreground">
-                  Maior relação impacto/probabilidade no curto prazo. Acelerar Sistema de Gestão Hídrica.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 p-3 bg-background rounded-lg">
-              <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium">Antecipar estratégia de carbono</p>
-                <p className="text-xs text-muted-foreground">
-                  Regulação de carbono em tramitação com 75% de probabilidade de aprovação em 2024.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 p-3 bg-background rounded-lg">
-              <ArrowRight className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium">Investir em adaptação costeira</p>
-                <p className="text-xs text-muted-foreground">
-                  Terminal Portuário SP é hotspot crítico. Proteção de infraestrutura é urgente.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Separator />
 
-        {/* Footer */}
-        <div className="text-center text-xs text-muted-foreground pt-4 border-t">
-          <p>Este relatório foi preparado em conformidade com IFRS S2 - Climate-related Disclosures</p>
-          <p>© {new Date().getFullYear()} {executiveSummary.organization} - Todos os direitos reservados</p>
+        <div>
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Brain className="h-5 w-5" />
+            Recomendações IA
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {aiRecommendations.map((rec, idx) => (
+              <Card key={idx} className="border-primary/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline" className="bg-primary/10 text-primary">{rec.title}</Badge>
+                  </div>
+                  <p className="text-sm mb-2">{rec.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium">Impacto esperado:</span> {rec.impact}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <div className="text-center pt-4 border-t text-xs text-muted-foreground">
+          <p>Relatório gerado automaticamente pela plataforma MRV Territorial</p>
+          <p>Este documento atende aos requisitos de divulgação da IFRS S2</p>
         </div>
       </div>
     </div>
