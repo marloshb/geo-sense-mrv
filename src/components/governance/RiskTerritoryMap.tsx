@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { escapeHtml } from '@/lib/security';
 
 interface RiskLayer {
   id: string;
@@ -268,23 +269,25 @@ export function RiskTerritoryMap({ layers, scenario, horizon, onTerritorySelect 
           color: white;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         `;
-        el.innerHTML = `${territory.score}`;
+        el.textContent = `${territory.score}`;
+
+        const risksHtml = territory.risks.length > 0 
+          ? `<p style="font-size: 12px; color: #666; margin-bottom: 4px;">Riscos identificados:</p>
+             <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+               ${territory.risks.map(r => `<span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${escapeHtml(r)}</span>`).join('')}
+             </div>`
+          : '<p style="font-size: 12px; color: #22c55e;">Sem riscos críticos identificados</p>';
 
         const popup = new mapboxgl.Popup({ offset: 25, closeButton: false })
           .setHTML(`
             <div style="padding: 8px; min-width: 200px;">
-              <h3 style="font-weight: bold; margin-bottom: 4px; font-size: 14px;">${territory.name}</h3>
+              <h3 style="font-weight: bold; margin-bottom: 4px; font-size: 14px;">${escapeHtml(territory.name)}</h3>
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <span style="background: ${getRiskColor(territory.riskLevel)}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
-                  Score: ${territory.score}
+                <span style="background: ${escapeHtml(getRiskColor(territory.riskLevel))}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+                  Score: ${escapeHtml(territory.score)}
                 </span>
               </div>
-              ${territory.risks.length > 0 ? `
-                <p style="font-size: 12px; color: #666; margin-bottom: 4px;">Riscos identificados:</p>
-                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                  ${territory.risks.map(r => `<span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${r}</span>`).join('')}
-                </div>
-              ` : '<p style="font-size: 12px; color: #22c55e;">Sem riscos críticos identificados</p>'}
+              ${risksHtml}
             </div>
           `);
 
