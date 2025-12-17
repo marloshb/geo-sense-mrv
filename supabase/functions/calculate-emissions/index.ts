@@ -32,16 +32,89 @@ serve(async (req) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error("No authorization header provided");
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Create client with user's token to verify authentication
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      }
+    });
+
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+    
+    if (authError || !user) {
+      console.error("Authentication failed:", authError?.message);
+      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    console.log(`Authenticated user: ${user.id}`);
+
     const { operationalDataIds, territoryId, periodStart, periodEnd } = await req.json();
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Get user's organization from profile
+    const { data: profile, error: profileError } = await supabaseAuth
+      .from('profiles')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single();
 
-    // Fetch operational data
+    if (profileError || !profile?.organization_id) {
+      console.error("Failed to get user profile:", profileError?.message);
+      return new Response(JSON.stringify({ error: 'User profile not found' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // If territoryId is provided, verify user has access to it
+    if (territoryId) {
+      const { data: territory, error: territoryError } = await supabaseAuth
+        .from('territories')
+        .select('organization_id')
+        .eq('id', territoryId)
+        .single();
+
+      if (territoryError || !territory) {
+        console.error("Territory not found:", territoryError?.message);
+        return new Response(JSON.stringify({ error: 'Territory not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      if (territory.organization_id !== profile.organization_id) {
+        console.error("Access denied: user doesn't have access to this territory");
+        return new Response(JSON.stringify({ error: 'Access denied' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // Use service role for data operations but only after authorization is verified
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch operational data - filter by organization through territory
     let query = supabase
       .from('operational_data')
-      .select('*');
+      .select('*, territories!inner(organization_id)')
+      .eq('territories.organization_id', profile.organization_id);
 
     if (operationalDataIds && operationalDataIds.length > 0) {
       query = query.in('id', operationalDataIds);
@@ -54,6 +127,7 @@ serve(async (req) => {
     const { data: operationalData, error: opError } = await query;
 
     if (opError) {
+      console.error("Error fetching operational data:", opError.message);
       throw new Error(`Error fetching operational data: ${opError.message}`);
     }
 
@@ -67,13 +141,14 @@ serve(async (req) => {
       });
     }
 
-    // Fetch emission factors
+    // Fetch emission factors (these are either default or organization-specific)
     const { data: emissionFactors, error: efError } = await supabase
       .from('emission_factors')
       .select('*')
-      .eq('is_default', true);
+      .or(`is_default.eq.true,organization_id.eq.${profile.organization_id}`);
 
     if (efError) {
+      console.error("Error fetching emission factors:", efError.message);
       throw new Error(`Error fetching emission factors: ${efError.message}`);
     }
 
@@ -97,7 +172,6 @@ serve(async (req) => {
         case 'energy':
           emissionFactor = factorMap.get('energia elétrica_grid_brazil');
           if (emissionFactor) {
-            // Convert quantity to MWh if needed
             let quantityMWh = data.quantity;
             if (data.unit === 'kWh') quantityMWh = data.quantity / 1000;
             emissions = quantityMWh * emissionFactor.factor_value;
@@ -107,14 +181,13 @@ serve(async (req) => {
           break;
 
         case 'fuel':
-          // Try to match fuel type from notes/metadata
           const fuelTypes = ['diesel', 'gasolina', 'glp', 'gás natural', 'carvão'];
           for (const fuel of fuelTypes) {
             emissionFactor = factorMap.get(`${fuel}_combustion`);
             if (emissionFactor) break;
           }
           if (!emissionFactor) {
-            emissionFactor = factorMap.get('diesel_combustion'); // Default to diesel
+            emissionFactor = factorMap.get('diesel_combustion');
           }
           if (emissionFactor) {
             emissions = data.quantity * emissionFactor.factor_value;
@@ -124,7 +197,6 @@ serve(async (req) => {
           break;
 
         default:
-          // Skip other types for now
           continue;
       }
 
@@ -133,7 +205,7 @@ serve(async (req) => {
           territory_id: data.territory_id,
           asset_id: data.asset_id,
           metric_type: metricType,
-          value: Math.round(emissions * 1000) / 1000, // Round to 3 decimal places
+          value: Math.round(emissions * 1000) / 1000,
           unit: 'tCO2e',
           period_start: data.period_start,
           period_end: data.period_end,
@@ -144,7 +216,6 @@ serve(async (req) => {
       }
     }
 
-    // Calculate total emissions
     const totalEmissions = totalScope1 + totalScope2 + totalScope3;
 
     // Store metrics in database
@@ -155,11 +226,10 @@ serve(async (req) => {
 
       if (insertError) {
         console.error("Error storing metrics:", insertError);
-        // Continue anyway - return calculated values
       }
     }
 
-    console.log(`Calculated emissions: Scope1=${totalScope1}, Scope2=${totalScope2}, Total=${totalEmissions}`);
+    console.log(`Calculated emissions for user ${user.id}: Scope1=${totalScope1}, Scope2=${totalScope2}, Total=${totalEmissions}`);
 
     return new Response(JSON.stringify({
       success: true,
