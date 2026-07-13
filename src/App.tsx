@@ -3,7 +3,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Monitoring from "./pages/Monitoring";
@@ -30,17 +29,17 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/monitoring" element={<ProtectedRoute><Monitoring /></ProtectedRoute>} />
-          <Route path="/territories" element={<ProtectedRoute><Territories /></ProtectedRoute>} />
-          <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-          <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-          <Route path="/risks" element={<ProtectedRoute><Risks /></ProtectedRoute>} />
-          <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-          <Route path="/audit" element={<ProtectedRoute><Audit /></ProtectedRoute>} />
-          <Route path="/integrations" element={<ProtectedRoute><Integrations /></ProtectedRoute>} />
-          <Route path="/governance" element={<ProtectedRoute><Governance /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/monitoring" element={<Monitoring />} />
+          <Route path="/territories" element={<Territories />} />
+          <Route path="/assets" element={<Assets />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/risks" element={<Risks />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/audit" element={<Audit />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/governance" element={<Governance />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

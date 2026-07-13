@@ -1,7 +1,0 @@
-project_id = "gqxrypuzapwdyfuwkytt"
-
-[functions.mrv-ai-insights]
-verify_jwt = true
-
-[functions.calculate-emissions]
-verify_jwt = true
