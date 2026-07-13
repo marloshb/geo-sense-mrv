@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
+  base: process.env.GITHUB_PAGES === "true" ? "/geo-sense-mrv/" : "/",
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
